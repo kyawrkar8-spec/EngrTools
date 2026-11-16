@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Amber Light — Solar Sizing (kW)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* Amber Light — cyan + amber theme */
+:root {
+  --bg: #060f15;
+  --bg2: #0a1720;
+  --card: #0e2030;
+  --card-hi: #13b0aa;
+  --line: #1b3f4d;
+  --txt: #dbe7f3;
+  --muted: #7fa7b8;
+  --cyan: #25b3ae;
+  --cyan-b: #45d6cf;
+  --cyan-d: #0f8f8a;
+  --amber: #e8b84b;
+  --amber-d: #d29a2c;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(900px 500px at 50% -12%, rgba(37,179,174,.13), transparent 70%),
+    radial-gradient(700px 420px at 100% 120%, rgba(232,184,75,.07), transparent 70%),
+    var(--bg);
+  color: var(--txt);
+  font-family: 'Noto Sans Myanmar', system-ui, 'Segoe UI', sans-serif;
+  min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--cyan-d), var(--cyan-b) 45%, var(--amber) 100%);
+  z-index: 40;
+}
+
+/* ---------- Header ---------- */
+header {
+  position: relative;
+  padding: 20px 16px 14px;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(37,179,174,.10), rgba(37,179,174,0) 78%);
+}
+header::after {
+  content: '';
+  position: absolute;
+  left: 8%; right: 8%; bottom: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(37,179,174,.55), rgba(232,184,75,.55), transparent);
+}
+header img.brand {
+  display: block;
+  height: 58px;
+  width: auto;
+  max-width: 80%;
+  margin: 0 auto 10px;
+  filter: drop-shadow(0 6px 20px rgba(37,179,174,.35));
+}
+header h1 {
+  margin: 0;
+  font-size: 21px;
+  letter-spacing: 0.4px;
+  color: #eafbf9;
+  text-shadow: 0 2px 14px rgba(37,179,174,.35);
+}
+header h1::after {
+  content: '';
+  display: block;
+  width: 58px;
+  height: 2px;
+  margin: 9px auto 0;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--cyan-b), var(--amber));
+}
+header p {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  letter-spacing: .3px;
+  color: var(--muted);
+}
+
+/* ---------- Tabs ---------- */
+.tabbar {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 12px 0;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+  background: rgba(6,15,21,.72);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.tabbar button {
+  position: relative;
+  background: none;
+  border: none;
+  color: var(--muted);
+  padding: 10px 14px;
+  font-size: 14.5px;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 9px 9px 0 0;
+  transition: color .15s, background .15s;
+}
+.tabbar button:hover {
+  color: #bfe9e6;
+  background: rgba(37,179,174,.07);
+}
+.tabbar button.active {
+  color: var(--cyan-b);
+  background: linear-gradient(180deg, rgba(37,179,174,.14), rgba(37,179,174,0));
+}
+.tabbar button.active::after {
+  content: '';
+  position: absolute;
+  left: 10px; right: 10px; bottom: -1px; height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--cyan), var(--amber));
+  box-shadow: 0 0 12px rgba(37,179,174,.6);
+}
+
+.tab { display: none; padding: 16px; max-width: 1100px; margin: 0 auto; }
+.tab.active { display: block; animation: fade .18s ease-out; }
+@keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* ---------- Cards ---------- */
+.card {
+  background: linear-gradient(180deg, #0f2231, #0c1a26 70%);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 10px 26px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.03);
+}
+.card h3 {
+  margin: 0 0 14px;
+  font-size: 15.5px;
+  color: #bff0ec;
+  letter-spacing: .2px;
+  padding-left: 11px;
+  border-left: 3px solid var(--amber);
+  line-height: 1.4;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px 16px;
+}
+
+label {
+  display: block;
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+input, select {
+  width: 100%;
+  background: #07141c;
+  border: 1px solid var(--line);
+  color: var(--txt);
+  border-radius: 10px;
+  padding: 10px 11px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color .15s, box-shadow .15s, background .15s;
+}
+input:hover, select:hover { border-color: #27596a; }
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--cyan);
+  background: #08181f;
+  box-shadow: 0 0 0 3px rgba(37,179,174,.16);
+}
+select option { background: #0b1a24; color: var(--txt); }
+
+/* ---------- Buttons ---------- */
+button.btn {
+  appearance: none;
+  border: none;
+  border-radius: 10px;
+  padding: 11px 20px;
+  font-weight: 600;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  color: #04211f;
+  background: linear-gradient(135deg, #3fd2ca, var(--cyan) 45%, var(--cyan-d));
+  box-shadow: 0 6px 16px rgba(37,179,174,.28), inset 0 1px 0 rgba(255,255,255,.28);
+  transition: transform .12s, box-shadow .15s, filter .15s, background .15s;
+}
+button.btn:hover { filter: brightness(1.07); transform: translateY(-1px); box-shadow: 0 9px 22px rgba(37,179,174,.34); }
+button.btn:active { transform: translateY(0); filter: brightness(.97); }
+button.btn:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+
+button.btn.ghost {
+  background: rgba(37,179,174,.06);
+  color: #7fe0da;
+  border: 1px solid rgba(37,179,174,.45);
+  box-shadow: none;
+}
+button.btn.ghost:hover { background: rgba(37,179,174,.14); border-color: var(--cyan); color: #bff6f2; }
+
+button.btn.amber {
+  background: linear-gradient(135deg, #f4cd72, var(--amber) 55%, var(--amber-d));
+  color: #2a1d02;
+  box-shadow: 0 6px 16px rgba(232,184,75,.24), inset 0 1px 0 rgba(255,255,255,.35);
+}
+button.btn.amber:hover { box-shadow: 0 9px 22px rgba(232,184,75,.32); }
+
+button.btn.small { padding: 7px 12px; font-size: 12.5px; font-weight: 500; border-radius: 8px; }
+
+/* ---------- Results ---------- */
+.results { margin-top: 12px; }
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 2px;
+  border-bottom: 1px dashed rgba(27,63,77,.9);
+  font-size: 14px;
+}
+.row span { color: var(--muted); }
+.row b { color: #ffffff; text-align: right; font-weight: 600; }
+
+.row.row-main {
+  background: linear-gradient(90deg, rgba(37,179,174,.16), rgba(37,179,174,.03));
+  border: 1px solid rgba(37,179,174,.28);
+  border-left: 3px solid var(--amber);
+  border-radius: 10px;
+  padding: 11px 12px;
+  margin: 7px 0;
+}
+.row.row-main span { color: #a8ece7; font-weight: 600; }
+.row.row-main b { color: #ffffff; }
+
+.warn {
+  color: #ffb27a;
+  background: rgba(255,159,107,.08);
+  border: 1px solid rgba(255,159,107,.25);
+  border-radius: 9px;
+  padding: 9px 11px;
+  font-size: 13px;
+  margin: 8px 0;
+}
+.note {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 10px 0 0;
+  line-height: 1.75;
+  border-left: 2px solid rgba(37,179,174,.35);
+  padding-left: 10px;
+}
+
+/* ---------- SLD ---------- */
+.sld-toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; align-items: center; }
+.sld-canvas {
+  background: #071119;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: inset 0 0 40px rgba(37,179,174,.05);
+}
+svg#sldSvg { display: block; width: 100%; height: auto; touch-action: none; }
+.hint { font-size: 12.5px; color: var(--muted); margin: 10px 0 0; line-height: 1.7; }
+
+/* ---------- Load list ---------- */
+.load-head, .load-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 1.8fr) repeat(3, minmax(70px, 1fr)) 44px;
+  gap: 6px;
+  align-items: end;
+  margin-bottom: 6px;
+}
+.load-head { font-size: 12px; color: var(--muted); }
+.load-head span { display: block; }
+.load-row .l-del {
+  padding: 9px 0;
+  color: #ff9f8b;
+  border-color: rgba(255,159,139,.35);
+  font-size: 13px;
+}
+.load-row .l-del:hover { color: #ffd0c6; border-color: rgba(255,159,139,.7); background: rgba(255,159,139,.08); }
+
+/* ---------- Small screens ---------- */
+@media (max-width: 430px) {
+  header { padding: 16px 14px 12px; }
+  header img.brand { height: 48px; }
+  header h1 { font-size: 18.5px; }
+  .tabbar { gap: 2px; padding: 8px 8px 0; }
+  .tabbar button { padding: 9px 10px; font-size: 13.5px; }
+  .tab { padding: 12px; }
+  .card { padding: 14px; border-radius: 12px; }
+  .row { font-size: 13.5px; }
+  .row.row-main { padding: 10px; }
+  button.btn { padding: 11px 16px; }
+  .load-head, .load-row { grid-template-columns: minmax(110px, 1.6fr) repeat(3, minmax(58px, 1fr)) 38px; }
+}
+
+</style>
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#060f15">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Amber Light">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="64x64" href="icons/favicon-64.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<style>
+  body { padding-bottom: env(safe-area-inset-bottom); }
+  header { padding-top: calc(14px + env(safe-area-inset-top)); }
+  .tabbar { position: sticky; top: 0; z-index: 10; background: rgba(6,15,21,.92); }
+  @media (display-mode: standalone) { header p { display: none; } }
+</style>
+</head>
+<body>
+
+<header>
+  <img class="brand" src="data:image/png;base64,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" alt="Amber Light">
+  <h1>Solar Sizing — kW Calculator</h1>
+  <p>PV (kWp) • Battery (kWh) • Inverter (kW) • SLD</p>
+</header>
+
+<nav class="tabbar">
+  <button class="active" data-tab="tab-size">System Sizing</button>
+  <button data-tab="tab-load">Load List</button>
+  <button data-tab="tab-calc">Calculations</button>
+  <button data-tab="tab-sld">SLD</button>
+</nav>
+
+<main>
+
+<!-- ============ SYSTEM SIZING ============ -->
+<section id="tab-size" class="tab active">
+  <div class="card">
+    <h3>အခြေခံ အချက်အလက်</h3>
+    <div class="grid2">
+      <div>
+        <label>နေ့စဉ် သုံးစွဲမှု (kWh/day)</label>
+        <input id="sDaily" type="number" step="0.1" min="0" value="20">
+      </div>
+      <div>
+        <label>Peak Load (kW)</label>
+        <input id="sPeak" type="number" step="0.1" min="0" value="5">
+      </div>
+      <div>
+        <label>Backup လိုအပ်ချိန် (နာရီ)</label>
+        <input id="sBackup" type="number" step="0.5" min="0" value="8">
+      </div>
+      <div>
+        <label>Peak Sun Hours (နာရီ)</label>
+        <input id="sSun" type="number" step="0.1" min="0.1" value="4.5">
+      </div>
+      <div>
+        <label>Panel တစ်ခု (W)</label>
+        <input id="sPanel" type="number" step="1" min="1" value="550">
+      </div>
+      <div>
+        <label>System Loss / Derate (%)</label>
+        <input id="sDerate" type="number" step="1" min="1" max="100" value="80">
+      </div>
+      <div>
+        <label>AC System Voltage</label>
+        <select id="sAC">
+          <option value="230">230 V (1φ)</option>
+          <option value="400" selected>400 V (3φ)</option>
+        </select>
+      </div>
+      <div>
+        <label>Grid / Transformer</label>
+        <select id="sTR">
+          <option value="0" selected>မလိုအပ်ပါ</option>
+          <option value="1">Transformer ပါဝင်သည်</option>
+        </select>
+      </div>
+    </div>
+
+    <h3 style="margin-top:16px">Manual Override (optional)</h3>
+    <div class="grid2">
+      <div>
+        <label>Manual သုံးမည်လား</label>
+        <select id="sManual">
+          <option value="0" selected>မလုပ် — App တွက်ပေးမည်</option>
+          <option value="1">လုပ်မည် — ကိုယ့်ဂဏန်း သုံးမည်</option>
+        </select>
+      </div>
+      <div>
+        <label>PV Array (kWp)</label>
+        <input id="sManPv" type="number" step="0.1" min="0" value="20">
+      </div>
+      <div>
+        <label>Battery (kWh)</label>
+        <input id="sManBatt" type="number" step="0.1" min="0" value="24">
+      </div>
+      <div>
+        <label>Inverter (kW)</label>
+        <input id="sManInv" type="number" step="0.1" min="0" value="10">
+      </div>
+    </div>
+
+    <p style="margin-top:14px">
+      <button id="sizeBtn" class="btn">တွက်ချက်မည်</button>
+      <button id="sizeDrawBtn" class="btn amber">SLD ဆွဲပေးမည်</button>
+    </p>
+    <div id="sizeOut" class="results"></div>
+  </div>
+</section>
+
+<!-- ============ LOAD LIST ============ -->
+<section id="tab-load" class="tab">
+  <div class="card">
+    <h3>Load List — kW ဖြင့်သာ</h3>
+    <div class="load-head">
+      <span>Load Name</span><span>kW</span><span>Qty</span><span>Hours/day</span><span></span>
+    </div>
+    <div id="loadRows"></div>
+    <p style="margin-top:8px"><button id="addLoad" class="btn ghost small">+ Load ထည့်မည်</button></p>
+
+    <div class="grid2" style="margin-top:14px">
+      <div>
+        <label>Diversity / Demand Factor (%)</label>
+        <input id="lDiv" type="number" step="5" min="1" max="100" value="80">
+      </div>
+    </div>
+
+    <div id="loadTotals" class="results"></div>
+
+    <p style="margin-top:14px">
+      <button id="loadToSize" class="btn">Sizing သို့ ပို့မည်</button>
+      <button id="loadDraw" class="btn amber">SLD ဆွဲပေးမည်</button>
+    </p>
+  </div>
+</section>
+
+<!-- ============ CALCULATIONS ============ -->
+<section id="tab-calc" class="tab">
+  <div class="card">
+    <h3>Breaker Sizing</h3>
+    <div class="grid2">
+      <div>
+        <label>Load Power (kW)</label>
+        <input id="brkP" type="number" step="0.1" min="0" value="15">
+      </div>
+      <div>
+        <label>System Voltage (V)</label>
+        <input id="brkV" type="number" step="1" min="1" value="400">
+      </div>
+      <div>
+        <label>Phase</label>
+        <select id="brkPhase">
+          <option value="1">Single Phase (1φ)</option>
+          <option value="3" selected>Three Phase (3φ)</option>
+        </select>
+      </div>
+      <div>
+        <label>Power Factor</label>
+        <input id="brkPF" type="number" step="0.05" min="0.1" max="1" value="0.8">
+      </div>
+    </div>
+    <p style="margin-top:14px"><button id="brkBtn" class="btn">တွက်ချက်မည်</button></p>
+    <div id="brkOut" class="results"></div>
+  </div>
+
+  <div class="card">
+    <h3>Cable Sizing (Voltage Drop)</h3>
+    <div class="grid2">
+      <div>
+        <label>Load Current (A)</label>
+        <input id="cabI" type="number" step="1" min="0" value="32">
+      </div>
+      <div>
+        <label>Phase</label>
+        <select id="cabPhase">
+          <option value="1">Single Phase (1φ)</option>
+          <option value="3" selected>Three Phase (3φ)</option>
+        </select>
+      </div>
+      <div>
+        <label>System Voltage (V)</label>
+        <input id="cabV" type="number" step="1" min="1" value="400">
+      </div>
+      <div>
+        <label>Cable Length (m)</label>
+        <input id="cabL" type="number" step="1" min="0" value="50">
+      </div>
+      <div>
+        <label>ခွင့်ပြု Voltage Drop (%)</label>
+        <input id="cabDrop" type="number" step="0.5" min="0.1" value="3">
+      </div>
+      <div>
+        <label>Conductor</label>
+        <select id="cabMat">
+          <option value="cu" selected>Copper</option>
+          <option value="al">Aluminium</option>
+        </select>
+      </div>
+    </div>
+    <p style="margin-top:14px"><button id="cableBtn" class="btn">တွက်ချက်မည်</button></p>
+    <div id="cableOut" class="results"></div>
+  </div>
+
+  <div class="card">
+    <h3>Power P • S • Q</h3>
+    <div class="grid2">
+      <div>
+        <label>Voltage (V)</label>
+        <input id="pwV" type="number" step="1" min="1" value="400">
+      </div>
+      <div>
+        <label>Current (A)</label>
+        <input id="pwI" type="number" step="1" min="0" value="50">
+      </div>
+      <div>
+        <label>Phase</label>
+        <select id="pwPhase">
+          <option value="1">Single Phase (1φ)</option>
+          <option value="3" selected>Three Phase (3φ)</option>
+        </select>
+      </div>
+      <div>
+        <label>Power Factor</label>
+        <input id="pwPF" type="number" step="0.05" min="0.1" max="1" value="0.8">
+      </div>
+    </div>
+    <p style="margin-top:14px"><button id="pwBtn" class="btn">တွက်ချက်မည်</button></p>
+    <div id="pwOut" class="results"></div>
+  </div>
+
+  <div class="card">
+    <h3>Power Factor Correction</h3>
+    <div class="grid2">
+      <div>
+        <label>Real Power P (kW)</label>
+        <input id="pfP" type="number" step="1" min="0" value="100">
+      </div>
+      <div>
+        <label>လက်ရှိ Power Factor</label>
+        <input id="pfCur" type="number" step="0.01" min="0.1" max="1" value="0.75">
+      </div>
+      <div>
+        <label>ပန်းတိုင် Power Factor</label>
+        <input id="pfTar" type="number" step="0.01" min="0.1" max="1" value="0.95">
+      </div>
+    </div>
+    <p style="margin-top:14px"><button id="pfBtn" class="btn">တွက်ချက်မည်</button></p>
+    <div id="pfOut" class="results"></div>
+  </div>
+
+  <div class="card">
+    <h3>Transformer Sizing</h3>
+    <div class="grid2">
+      <div>
+        <label>Load (kW)</label>
+        <input id="trP" type="number" step="1" min="0" value="80">
+      </div>
+      <div>
+        <label>Power Factor</label>
+        <input id="trPF" type="number" step="0.05" min="0.1" max="1" value="0.8">
+      </div>
+      <div>
+        <label>Future Growth (%)</label>
+        <input id="trG" type="number" step="5" min="0" value="25">
+      </div>
+    </div>
+    <p style="margin-top:14px"><button id="trBtn" class="btn">တွက်ချက်မည်</button></p>
+    <div id="trOut" class="results"></div>
+  </div>
+</section>
+
+<!-- ============ SLD ============ -->
+<section id="tab-sld" class="tab">
+  <div class="card">
+    <h3>Single Line Diagram</h3>
+    <div id="palette" class="sld-toolbar"></div>
+    <div class="sld-toolbar">
+      <button id="delNode" class="btn ghost small">ဖျက်မည်</button>
+      <button id="saveSld" class="btn ghost small">Save</button>
+      <button id="loadSld" class="btn ghost small">Load</button>
+      <button id="expSvg" class="btn ghost small">Export SVG</button>
+      <button id="clrAll" class="btn ghost small">Clear All</button>
+      <span id="sldMsg" class="hint"></span>
+    </div>
+    <div class="sld-canvas">
+      <svg id="sldSvg" viewBox="0 0 1200 900"></svg>
+    </div>
+    <p class="hint">
+      Symbol နှိပ်၍ ထည့်ပါ • drag ဖြင့် ရွှေ့ပါ • Port နှစ်ခု နှိပ်၍ wire ဆက်ပါ •
+      double-click ဖြင့် label ပြင်ပါ • Delete key ဖြင့် ဖျက်ပါ
+    </p>
+  </div>
+</section>
+
+</main>
+
+<script>
+'use strict';
+
+(function () {
+  var svg = document.getElementById('sldSvg');
+  var NS = 'http://www.w3.org/2000/svg';
+
+  /* ---------- Symbol library ---------- */
+  var SYM = {
+    grid: {
+      name: 'Grid Source (Main Incomer)', w: 76, h: 76,
+      draw: function () {
+        return '<circle r="26" class="sym"/>' +
+               '<path d="M -14 6 Q -7 -8 0 6 T 14 6" class="sym"/>';
+      }
+    },
+    pv: {
+      name: 'Solar PV Array', w: 80, h: 64,
+      draw: function () {
+        return '<rect x="-28" y="-20" width="56" height="40" rx="3" class="box"/>' +
+               '<path d="M -28 0 H 28 M -9 -20 V 20 M 9 -20 V 20" class="sym"/>';
+      }
+    },
+    battery: {
+      name: 'Battery Bank', w: 70, h: 44,
+      draw: function () {
+        return '<line x1="-22" y1="-12" x2="22" y2="-12" class="thick"/>' +
+               '<line x1="-22" y1="-4" x2="22" y2="-4" class="sym"/>' +
+               '<line x1="-8" y1="4" x2="8" y2="4" class="thick"/>' +
+               '<line x1="-22" y1="12" x2="22" y2="12" class="sym"/>';
+      }
+    },
+    inverter: {
+      name: 'Inverter / PCS', w: 70, h: 76,
+      draw: function () {
+        return '<rect x="-26" y="-26" width="52" height="52" rx="4" class="box"/>' +
+               '<line x1="-14" y1="-12" x2="14" y2="-12" class="sym"/>' +
+               '<line x1="-14" y1="-6" x2="14" y2="-6" class="sym"/>' +
+               '<path d="M -14 12 Q -7 0 0 12 T 14 12" class="sym"/>';
+      }
+    },
+    transformer: {
+      name: 'Transformer', w: 72, h: 52,
+      draw: function () {
+        return '<circle cx="-8" cy="0" r="18" class="sym"/>' +
+               '<circle cx="8" cy="0" r="18" class="sym"/>';
+      }
+    },
+    breaker: {
+      name: 'Breaker (MCCB/ACB)', w: 56, h: 72,
+      draw: function () {
+        return '<rect x="-18" y="-24" width="36" height="48" rx="3" class="box"/>' +
+               '<path d="M -12 14 L 12 -14" class="sym"/>';
+      }
+    },
+    fuse: {
+      name: 'Fuse', w: 48, h: 44,
+      draw: function () {
+        return '<rect x="-16" y="-9" width="32" height="18" class="box"/>' +
+               '<line x1="-16" y1="0" x2="16" y2="0" class="sym"/>';
+      }
+    },
+    busbar: {
+      name: 'Busbar', w: 180, h: 24,
+      ports: [{ x: -90, y: 0 }, { x: 90, y: 0 }, { x: 0, y: -14 }, { x: 0, y: 14 }],
+      draw: function () {
+        return '<line x1="-90" y1="0" x2="90" y2="0" class="thick"/>';
+      }
+    },
+    motor: {
+      name: 'Motor Load', w: 64, h: 68,
+      draw: function () {
+        return '<circle r="22" class="sym"/>' +
+               '<text y="6" class="stext">M</text>';
+      }
+    },
+    lamp: {
+      name: 'Lighting Load', w: 60, h: 64,
+      draw: function () {
+        return '<circle r="20" class="sym"/>' +
+               '<path d="M -14 -14 L 14 14 M 14 -14 L -14 14" class="sym"/>';
+      }
+    },
+    cap: {
+      name: 'Capacitor Bank', w: 64, h: 52,
+      draw: function () {
+        return '<line x1="-20" y1="-6" x2="20" y2="-6" class="thick"/>' +
+               '<line x1="-20" y1="6" x2="20" y2="6" class="thick"/>';
+      }
+    },
+    earth: {
+      name: 'Earth / Ground', w: 48, h: 40,
+      draw: function () {
+        return '<line x1="0" y1="-16" x2="0" y2="-4" class="sym"/>' +
+               '<line x1="-16" y1="-4" x2="16" y2="-4" class="sym"/>' +
+               '<line x1="-10" y1="2" x2="10" y2="2" class="sym"/>' +
+               '<line x1="-5" y1="8" x2="5" y2="8" class="sym"/>';
+      }
+    }
+  };
+
+  function portsOf(type) {
+    var s = SYM[type];
+    if (s.ports) return s.ports;
+    return [{ x: 0, y: -s.h / 2 }, { x: 0, y: s.h / 2 }];
+  }
+
+  /* ---------- State ---------- */
+  var S = { nodes: [], wires: [], nextId: 1, selected: null, pending: null, mouse: null, drag: null };
+
+  function byId(id) {
+    for (var i = 0; i < S.nodes.length; i++) if (S.nodes[i].id === id) return S.nodes[i];
+    return null;
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function portPoint(p) {
+    var n = byId(p.node);
+    if (!n) return { x: 0, y: 0 };
+    var pp = portsOf(n.type)[p.port] || { x: 0, y: 0 };
+    return { x: n.x + pp.x, y: n.y + pp.y };
+  }
+
+  function wirePath(a, b) {
+    if (Math.abs(a.y - b.y) >= Math.abs(a.x - b.x)) {
+      var m = (a.y + b.y) / 2;
+      return 'M ' + a.x + ' ' + a.y + ' L ' + a.x + ' ' + m + ' L ' + b.x + ' ' + m + ' L ' + b.x + ' ' + b.y;
+    }
+    var mx = (a.x + b.x) / 2;
+    return 'M ' + a.x + ' ' + a.y + ' L ' + mx + ' ' + a.y + ' L ' + mx + ' ' + b.y + ' L ' + b.x + ' ' + b.y;
+  }
+
+  /* ---------- Render ---------- */
+  var SVG_STYLE =
+    '<style>' +
+    '.bg{fill:#071119}' +
+    '.wire{fill:none;stroke:#e8b84b;stroke-width:2.5;stroke-linecap:round}' +
+    '.wire.ghost{stroke:#45d6cf;stroke-dasharray:6 5;opacity:.7}' +
+    '.node .sym{fill:none;stroke:#dbe7f3;stroke-width:2.2;stroke-linecap:round}' +
+    '.node .box{fill:none;stroke:#dbe7f3;stroke-width:2.2}' +
+    '.node .thick{fill:none;stroke:#dbe7f3;stroke-width:5;stroke-linecap:round}' +
+    '.node .halo{fill:transparent;stroke:transparent;stroke-width:1.5;cursor:move}' +
+    '.node.sel .halo{stroke:#45d6cf}' +
+    '.node .stext{fill:#dbe7f3;font-size:17px;text-anchor:middle;font-family:sans-serif}' +
+    '.nlabel{fill:#7fa7b8;font-size:12px;text-anchor:middle;font-family:sans-serif}' +
+    '.port{fill:#071119;stroke:#45d6cf;stroke-width:2;cursor:crosshair}' +
+    '.port.pend{fill:#45d6cf}' +
+    '</style>';
+
+  function render() {
+    var out = SVG_STYLE;
+    out += '<rect class="bg" x="0" y="0" width="1200" height="900"/>';
+
+    out += '<g id="wireLayer">';
+    S.wires.forEach(function (w) {
+      out += '<path class="wire" d="' + wirePath(portPoint(w.a), portPoint(w.b)) + '"/>';
+    });
+    if (S.pending && S.mouse) {
+      var a = portPoint(S.pending);
+      out += '<path class="wire ghost" d="M ' + a.x + ' ' + a.y + ' L ' + S.mouse.x + ' ' + S.mouse.y + '"/>';
+    }
+    out += '</g>';
+
+    out += '<g id="nodeLayer">';
+    S.nodes.forEach(function (n) {
+      var s = SYM[n.type];
+      out += '<g class="node' + (S.selected === n.id ? ' sel' : '') + '" data-id="' + n.id + '" transform="translate(' + n.x + ',' + n.y + ')">';
+      out += '<rect class="halo" x="' + (-s.w / 2 - 8) + '" y="' + (-s.h / 2 - 8) + '" width="' + (s.w + 16) + '" height="' + (s.h + 16) + '" rx="8"/>';
+      out += s.draw();
+      out += '<text class="nlabel" y="' + (s.h / 2 + 18) + '">' + esc(n.label) + '</text>';
+      out += '</g>';
+    });
+    out += '</g>';
+
+    out += '<g id="portLayer">';
+    S.nodes.forEach(function (n) {
+      portsOf(n.type).forEach(function (p, i) {
+        var pend = S.pending && S.pending.node === n.id && S.pending.port === i;
+        out += '<circle class="port' + (pend ? ' pend' : '') + '" data-node="' + n.id + '" data-port="' + i + '" cx="' + (n.x + p.x) + '" cy="' + (n.y + p.y) + '" r="6"/>';
+      });
+    });
+    out += '</g>';
+
+    svg.innerHTML = out;
+  }
+
+  /* ---------- Helpers ---------- */
+  function svgPoint(e) {
+    var ctm = svg.getScreenCTM();
+    var p = svg.createSVGPoint();
+    p.x = e.clientX; p.y = e.clientY;
+    return p.matrixTransform(ctm.inverse());
+  }
+
+  function setStatus(msg) {
+    document.getElementById('sldMsg').textContent = msg || '';
+  }
+
+  /* ---------- Palette ---------- */
+  var palette = document.getElementById('palette');
+  Object.keys(SYM).forEach(function (key) {
+    var b = document.createElement('button');
+    b.className = 'btn ghost small';
+    b.textContent = SYM[key].name;
+    b.addEventListener('click', function () {
+      var i = S.nodes.length;
+      var n = {
+        id: S.nextId++,
+        type: key,
+        x: 600 + ((i % 6) - 3) * 60,
+        y: 300 + Math.floor(i / 6) * 90,
+        label: SYM[key].name
+      };
+      S.nodes.push(n);
+      S.selected = n.id;
+      render();
+    });
+    palette.appendChild(b);
+  });
+
+  /* ---------- Events ---------- */
+  svg.addEventListener('pointerdown', function (e) {
+    var portEl = e.target.closest('.port');
+    if (portEl) {
+      var nid = parseInt(portEl.dataset.node, 10);
+      var pi = parseInt(portEl.dataset.port, 10);
+      if (!S.pending) {
+        S.pending = { node: nid, port: pi };
+        setStatus('Wire start — ပုံရိပ် နောက် port တစ်ခု နှိပ်ပါ (ပယ်ဖျက်ရန် Esc)');
+      } else if (S.pending.node === nid && S.pending.port === pi) {
+        S.pending = null;
+        setStatus('');
+      } else {
+        S.wires.push({ a: S.pending, b: { node: nid, port: pi } });
+        S.pending = null;
+        setStatus('');
+      }
+      render();
+      return;
+    }
+
+    var nodeEl = e.target.closest('.node');
+    if (nodeEl) {
+      var id = parseInt(nodeEl.dataset.id, 10);
+      var n = byId(id);
+      if (!n) return;
+      S.selected = id;
+      var pt = svgPoint(e);
+      S.drag = { id: id, dx: n.x - pt.x, dy: n.y - pt.y };
+      try { svg.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+      render();
+    }
+  });
+
+  svg.addEventListener('pointermove', function (e) {
+    var pt = svgPoint(e);
+    if (S.drag) {
+      var n = byId(S.drag.id);
+      if (n) {
+        n.x = Math.round(pt.x + S.drag.dx);
+        n.y = Math.round(pt.y + S.drag.dy);
+        render();
+      }
+    } else if (S.pending) {
+      S.mouse = pt;
+      render();
+    }
+  });
+
+  svg.addEventListener('pointerup', function () { S.drag = null; });
+
+  svg.addEventListener('dblclick', function (e) {
+    var nodeEl = e.target.closest('.node');
+    if (nodeEl) {
+      var n = byId(parseInt(nodeEl.dataset.id, 10));
+      if (!n) return;
+      var v = prompt('Label:', n.label);
+      if (v !== null && v.trim() !== '') { n.label = v.trim(); render(); }
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      S.pending = null; S.selected = null; setStatus('');
+      render();
+    }
+    if ((e.key === 'Delete' || e.key === 'Backspace') && S.selected !== null) {
+      var t = e.target;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) return;
+      deleteSelected();
+      e.preventDefault();
+    }
+  });
+
+  function deleteSelected() {
+    S.nodes = S.nodes.filter(function (n) { return n.id !== S.selected; });
+    S.wires = S.wires.filter(function (w) { return w.a.node !== S.selected && w.b.node !== S.selected; });
+    S.selected = null;
+    render();
+  }
+
+  document.getElementById('delNode').addEventListener('click', deleteSelected);
+
+  document.getElementById('clrAll').addEventListener('click', function () {
+    if (S.nodes.length === 0) return;
+    if (confirm('Diagram အားလုံး ဖျက်မှာလား?')) {
+      S.nodes = []; S.wires = []; S.selected = null; S.pending = null; S.nextId = 1;
+      render();
+    }
+  });
+
+  /* ---------- Save / Load / Export ---------- */
+  document.getElementById('saveSld').addEventListener('click', function () {
+    try {
+      localStorage.setItem('sld-diagram', JSON.stringify({ nodes: S.nodes, wires: S.wires, nextId: S.nextId }));
+      setStatus('ဒီ browser ထဲတွင် save လုပ်ပြီးပါပြီ');
+    } catch (err) {
+      setStatus('Save မအောင်မြင်ပါ: ' + err.message);
+    }
+  });
+
+  document.getElementById('loadSld').addEventListener('click', function () {
+    try {
+      var raw = localStorage.getItem('sld-diagram');
+      if (!raw) { setStatus('Save လုပ်ထားသော diagram မရှိပါ'); return; }
+      var d = JSON.parse(raw);
+      if (d && Array.isArray(d.nodes) && Array.isArray(d.wires)) {
+        S.nodes = d.nodes;
+        S.wires = d.wires;
+        S.nextId = d.nextId || (d.nodes.length + 1);
+        S.selected = null; S.pending = null;
+        render();
+        setStatus('Load ပြီးပါပြီ');
+      }
+    } catch (err) {
+      setStatus('Load မအောင်မြင်ပါ: ' + err.message);
+    }
+  });
+
+  document.getElementById('expSvg').addEventListener('click', function () {
+    var clone = svg.cloneNode(true);
+    clone.setAttribute('xmlns', NS);
+    var s = new XMLSerializer().serializeToString(clone);
+    var blob = new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n' + s], { type: 'image/svg+xml' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'sld-diagram.svg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  });
+
+  render();
+
+  /* ---------- Public API (for Auto Design) ---------- */
+  window.SLD = {
+    clear: function () {
+      S.nodes = []; S.wires = []; S.selected = null; S.pending = null; S.nextId = 1;
+      render();
+    },
+    addNode: function (type, x, y, label) {
+      if (!SYM[type]) return null;
+      var n = {
+        id: S.nextId++,
+        type: type,
+        x: Math.max(60, Math.min(1140, Math.round(x))),
+        y: Math.max(50, Math.min(860, Math.round(y))),
+        label: label || SYM[type].name
+      };
+      S.nodes.push(n);
+      render();
+      return n;
+    },
+    connect: function (n1, p1, n2, p2) {
+      if (!byId(n1) || !byId(n2)) return;
+      S.wires.push({ a: { node: n1, port: p1 }, b: { node: n2, port: p2 } });
+      render();
+    },
+    render: render
+  };
+})();
+
+</script>
+<script>
+'use strict';
+
+/* Simple kW/kWh solar sizing — Sigenergy style (no Ah, no DC bus voltage) */
+
+function $(id) { return document.getElementById(id); }
+
+function num(id) {
+  var v = parseFloat($(id).value);
+  return isFinite(v) ? v : 0;
+}
+
+function fmt(n, d) {
+  if (d === undefined) d = 1;
+  if (!isFinite(n)) return '—';
+  return n.toLocaleString('en-US', { maximumFractionDigits: d });
+}
+
+function rows(pairs) {
+  return pairs.map(function (p) {
+    var cls = p[2] ? 'row row-main' : 'row';
+    return '<div class="' + cls + '"><span>' + p[0] + '</span><b>' + p[1] + '</b></div>';
+  }).join('');
+}
+
+/* ---------- Tabs ---------- */
+document.querySelectorAll('.tabbar button').forEach(function (b) {
+  b.addEventListener('click', function () {
+    document.querySelectorAll('.tabbar button').forEach(function (x) { x.classList.remove('active'); });
+    document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+    b.classList.add('active');
+    $(b.dataset.tab).classList.add('active');
+  });
+});
+
+function goTab(id) {
+  var b = document.querySelector('.tabbar button[data-tab="' + id + '"]');
+  if (b) b.click();
+}
+
+/* ---------- Standards ---------- */
+var BREAKER_SIZES = [6, 10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600, 2000];
+var TR_SIZES = [25, 50, 100, 160, 200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600, 2000, 2500];
+
+/* Sigenergy SigenStor hybrid inverter ratings (kW) */
+var SIGEN_INV = [3.6, 5, 6, 8, 10, 12, 15, 20, 25, 30, 40, 48];
+var SIGEN_MODULE_KWH = 8;
+
+function nextStd(list, v) {
+  for (var i = 0; i < list.length; i++) if (list[i] >= v) return list[i];
+  return null;
+}
+
+/* ---------- Load list ---------- */
+function loadRowData() {
+  var out = [];
+  document.querySelectorAll('#loadRows .load-row').forEach(function (r) {
+    var name = (r.querySelector('.l-name').value || '').trim();
+    var kw = parseFloat(r.querySelector('.l-kw').value) || 0;
+    var qty = parseFloat(r.querySelector('.l-qty').value) || 0;
+    var hr = parseFloat(r.querySelector('.l-hr').value) || 0;
+    if (kw > 0 && qty > 0) {
+      out.push({ name: name || ('Load ' + (out.length + 1)), kw: kw, qty: qty, hours: hr, peak: kw * qty, kwh: kw * qty * hr });
+    }
+  });
+  return out;
+}
+
+function loadTotals() {
+  var loads = loadRowData();
+  var conn = 0, daily = 0;
+  loads.forEach(function (l) { conn += l.peak; daily += l.kwh; });
+  var div = Math.min(Math.max(num('lDiv') || 80, 1), 100) / 100;
+  return { loads: loads, conn: conn, daily: daily, div: div, peak: conn * div };
+}
+
+function renderLoadTotals() {
+  var t = loadTotals();
+  $('loadTotals').innerHTML = rows([
+    ['Connected Load', fmt(t.conn, 1) + ' kW'],
+    ['Peak Demand (× ' + fmt(t.div * 100, 0) + '%)', fmt(t.peak, 1) + ' kW'],
+    ['နေ့စဉ် သုံးစွဲမှု', fmt(t.daily, 1) + ' kWh/day'],
+    ['Load အရေအတွက်', t.loads.length + ' ခု']
+  ]) + '<p class="note">ဤဂဏန်းများကို "Sizing သို့ ပို့မည်" နှိပ်၍ System Sizing တွင် တိုက်ရိုက် အသုံးပြုနိုင်ပါသည်။</p>';
+}
+
+function addLoadRow(d) {
+  d = d || {};
+  var row = document.createElement('div');
+  row.className = 'load-row';
+  row.innerHTML =
+    '<div><input class="l-name" type="text" placeholder="Load name" value="' + (d.name || '') + '"></div>' +
+    '<div><input class="l-kw" type="number" step="0.1" min="0" value="' + (d.kw != null ? d.kw : 1) + '"></div>' +
+    '<div><input class="l-qty" type="number" step="1" min="1" value="' + (d.qty || 1) + '"></div>' +
+    '<div><input class="l-hr" type="number" step="0.5" min="0" value="' + (d.hours != null ? d.hours : 8) + '"></div>' +
+    '<div><button type="button" class="btn ghost small l-del">✕</button></div>';
+  row.querySelector('.l-del').addEventListener('click', function () { row.remove(); renderLoadTotals(); });
+  row.querySelectorAll('input').forEach(function (inp) { inp.addEventListener('input', renderLoadTotals); });
+  $('loadRows').appendChild(row);
+  renderLoadTotals();
+}
+
+$('addLoad').addEventListener('click', function () { addLoadRow(); });
+addLoadRow({ name: 'Lighting', kw: 1.5, qty: 1, hours: 6 });
+addLoadRow({ name: 'Air-con', kw: 1.2, qty: 2, hours: 8 });
+addLoadRow({ name: 'Water Pump', kw: 1.5, qty: 1, hours: 3 });
+
+$('lDiv').addEventListener('input', renderLoadTotals);
+
+$('loadToSize').addEventListener('click', function () {
+  var t = loadTotals();
+  if (!t.loads.length) {
+    $('loadTotals').innerHTML = '<p class="warn">Load အနည်းဆုံး တစ်ခု ထည့်ပါ။</p>';
+    return;
+  }
+  $('sDaily').value = Math.round(t.daily * 10) / 10;
+  $('sPeak').value = Math.round(t.peak * 10) / 10;
+  goTab('tab-size');
+  computeSizing();
+});
+
+/* ---------- Sizing ---------- */
+var DESIGN = null;
+
+function computeSizing() {
+  var out = $('sizeOut');
+
+  var daily = num('sDaily');
+  var peak = num('sPeak');
+  var backupH = num('sBackup');
+  var sun = num('sSun');
+  var panelW = num('sPanel');
+  var derate = Math.min(Math.max(num('sDerate') || 80, 1), 100) / 100;
+  var acV = parseFloat($('sAC').value) || 400;
+  var hasTR = $('sTR').value === '1';
+  var manual = $('sManual').value === '1';
+
+  if (daily <= 0) { out.innerHTML = '<p class="warn">နေ့စဉ် သုံးစွဲမှု (kWh/day) ထည့်ပါ။</p>'; DESIGN = null; return; }
+  if (sun <= 0 || panelW <= 0) { out.innerHTML = '<p class="warn">Sun hours နှင့် Panel W ကို စစ်ပါ။</p>'; DESIGN = null; return; }
+
+  var pvKw, panels, battKwh, modules, invKw, invPick, invUnits, cov;
+
+  if (manual) {
+    pvKw = num('sManPv');
+    battKwh = num('sManBatt');
+    invKw = num('sManInv');
+    panels = panelW > 0 ? Math.round((pvKw * 1000) / panelW) : 0;
+    modules = SIGEN_MODULE_KWH > 0 ? Math.ceil(battKwh / SIGEN_MODULE_KWH) : 0;
+    invPick = invKw;
+    invUnits = invKw > 0 ? 1 : 0;
+  } else {
+    /* PV: daily energy ÷ (sun hours × derate) */
+    var pvNeed = daily / (sun * derate);
+    panels = Math.max(Math.ceil((pvNeed * 1000) / panelW), 1);
+    pvKw = panels * panelW / 1000;
+
+    /* Battery: average load × backup hours, built from 8 kWh modules */
+    var avgKw = daily / 24;
+    var battNeed = avgKw * backupH;
+    modules = Math.max(Math.ceil(battNeed / SIGEN_MODULE_KWH), 1);
+    battKwh = modules * SIGEN_MODULE_KWH;
+
+    /* Inverter: peak load + 10% margin, nearest SigenStor rating */
+    var invNeed = peak > 0 ? peak * 1.1 : 0;
+    invPick = (nextStd(SIGEN_INV, invNeed) || SIGEN_INV[SIGEN_INV.length - 1]);
+    invUnits = Math.max(Math.ceil(invNeed / invPick), 1);
+    invKw = invPick * invUnits;
+  }
+
+  cov = daily > 0 ? (pvKw * sun * derate) / daily * 100 : 0;
+  var dcac = invKw > 0 ? pvKw / invKw : 0;
+  var backupGet = (peak > 0 || daily > 0) ? battKwh / (daily / 24) : 0;
+
+  var kM = acV <= 250 ? 1 : Math.sqrt(3);
+  var mainI = (peak * 1000) / (kM * acV * 0.9);
+  var mainBrk = nextStd(BREAKER_SIZES, mainI * 1.25);
+  var trKva = null;
+  if (hasTR) trKva = nextStd(TR_SIZES, (peak / 0.9) * 1.25);
+
+  DESIGN = {
+    acV: acV, hasTR: hasTR, daily: daily, peak: peak,
+    pvKw: pvKw, panels: panels, panelW: panelW,
+    battKwh: battKwh, modules: modules,
+    invKw: invKw, invPick: invPick, invUnits: invUnits,
+    mainBrk: mainBrk, mainI: mainI, trKva: trKva,
+    loads: loadRowData()
+  };
+
+  var rs = [
+    ['PV Array', fmt(pvKw, 1) + ' kWp (' + panels + ' × ' + fmt(panelW, 0) + ' W)'],
+    ['Battery', fmt(battKwh, 1) + ' kWh (' + modules + ' × ' + fmt(SIGEN_MODULE_KWH, 0) + ' kWh module)'],
+    ['Inverter', fmt(invKw, 1) + ' kW' + (invUnits > 1 ? ' (' + invUnits + ' units)' : '') + ' — SigenStor ' + fmt(invPick, 1) + ' kW']
+  ];
+  rs.forEach(function (r) { r[2] = true; });
+
+  rs.push(['နေ့စဉ် သုံးစွဲမှု', fmt(daily, 1) + ' kWh/day']);
+  rs.push(['Peak Load', fmt(peak, 1) + ' kW']);
+  rs.push(['PV Daily Coverage', fmt(cov, 0) + '% (sun ' + fmt(sun, 1) + ' h, loss ' + fmt(derate * 100, 0) + '%)']);
+  rs.push(['DC / AC Ratio', fmt(dcac, 2)]);
+  rs.push(['Battery Backup', fmt(backupGet, 1) + ' နာရီ (avg load ' + fmt(daily / 24, 2) + ' kW)']);
+  rs.push(['Main Breaker', fmt(mainI, 0) + ' A → ' + (mainBrk || '—') + ' A']);
+  if (hasTR) rs.push(['Transformer', (trKva || '—') + ' kVA']);
+  rs.push(['Grid Voltage', acV + ' V']);
+
+  out.innerHTML = rows(rs) +
+    '<p class="note">တွက်နည်း — PV = kWh/day ÷ (sun × loss) • Battery = avg.load × backup နာရီ (8 kWh module ဖြင့်) • Inverter = peak × 1.1 (SigenStor rating အနီးဆုံး) • Main breaker = peak မှတွက် + 25% margin။</p>';
+}
+
+$('sizeBtn').addEventListener('click', computeSizing);
+
+/* ---------- SLD auto-draw ---------- */
+function drawSLD(d) {
+  window.SLD.clear();
+
+  var bus = window.SLD.addNode('busbar', 400, 400, 'Main AC Bus ' + d.acV + ' V');
+
+  var prev = window.SLD.addNode('grid', 150, 110, 'Grid ' + d.acV + ' V');
+  var y = 110;
+  if (d.hasTR) {
+    y += 110;
+    var tr = window.SLD.addNode('transformer', 150, y, (d.trKva || '?') + ' kVA');
+    window.SLD.connect(prev.id, 1, tr.id, 0);
+    prev = tr;
+  }
+  y += 110;
+  var mb = window.SLD.addNode('breaker', 150, y, 'Main ' + (d.mainBrk || '?') + ' A');
+  window.SLD.connect(prev.id, 1, mb.id, 0);
+  window.SLD.connect(mb.id, 1, bus.id, 0);
+
+  var pv = window.SLD.addNode('pv', 900, 110, 'PV ' + fmt(d.pvKw, 1) + ' kWp');
+  var inv = window.SLD.addNode('inverter', 900, 250,
+    'SigenStor ' + (d.invUnits > 1 ? d.invUnits + ' × ' : '') + fmt(d.invPick || d.invKw, 1) + ' kW');
+  window.SLD.connect(pv.id, 1, inv.id, 0);
+
+  var bat = window.SLD.addNode('battery', 1090, 250, 'Battery ' + fmt(d.battKwh, 1) + ' kWh');
+  window.SLD.connect(bat.id, 0, inv.id, 1);
+  window.SLD.connect(inv.id, 1, bus.id, 1);
+
+  d.loads.forEach(function (l, i) {
+    var col = i % 6;
+    var rowIdx = Math.floor(i / 6);
+    var x = Math.min(130 + col * 175, 1080);
+    var yB = Math.min(540 + rowIdx * 180, 700);
+    var b = window.SLD.addNode('breaker', x, yB, l.name + ' — ' + fmt(l.peak, 1) + ' kW');
+    var ln = window.SLD.addNode('lamp', x, yB + 120, l.name + ' ' + fmt(l.peak, 1) + ' kW');
+    window.SLD.connect(bus.id, 3, b.id, 0);
+    window.SLD.connect(b.id, 1, ln.id, 0);
+  });
+
+  goTab('tab-sld');
+}
+
+$('sizeDrawBtn').addEventListener('click', function () {
+  if (!DESIGN) computeSizing();
+  if (DESIGN) drawSLD(DESIGN);
+});
+
+$('loadDraw').addEventListener('click', function () {
+  var t = loadTotals();
+  if (!t.loads.length) {
+    $('loadTotals').innerHTML = '<p class="warn">Load အနည်းဆုံး တစ်ခု ထည့်ပါ။</p>';
+    return;
+  }
+  $('sDaily').value = Math.round(t.daily * 10) / 10;
+  $('sPeak').value = Math.round(t.peak * 10) / 10;
+  computeSizing();
+  if (DESIGN) {
+    DESIGN.loads = t.loads;
+    drawSLD(DESIGN);
+  }
+});
+
+/* ---------- Breaker Sizing ---------- */
+$('brkBtn').addEventListener('click', function () {
+  var P = num('brkP');
+  var V = num('brkV') || 400;
+  var pf = num('brkPF') || 0.8;
+  var three = $('brkPhase').value === '3';
+  var k = three ? Math.sqrt(3) : 1;
+
+  if (P <= 0) { $('brkOut').innerHTML = '<p class="warn">Load power ဖြည့်ပါ။</p>'; return; }
+
+  var flc = (P * 1000) / (k * V * pf);
+  var pick = nextStd(BREAKER_SIZES, flc);
+
+  $('brkOut').innerHTML = rows([
+    ['Full Load Current', fmt(flc, 1) + ' A'],
+    ['အကြံပြု Breaker', pick ? pick + ' A' : 'ဇယားပြင်ပ — အထူး protection လိုသည်'],
+    ['Formula', three ? 'I = P / (√3 · V · PF)' : 'I = P / (V · PF)']
+  ]);
+});
+
+/* ---------- Cable Sizing ---------- */
+var CABLE_SIZES = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300, 400, 500];
+
+$('cableBtn').addEventListener('click', function () {
+  var I = num('cabI');
+  var V = num('cabV') || 400;
+  var L = num('cabL');
+  var maxDrop = num('cabDrop') || 5;
+  var rho = $('cabMat').value === 'al' ? 0.028 : 0.0175;
+  var three = $('cabPhase').value === '3';
+  var k = three ? Math.sqrt(3) : 2;
+  var limit = V * maxDrop / 100;
+
+  if (I <= 0 || L <= 0) { $('cableOut').innerHTML = '<p class="warn">Current နှင့် Length ဖြည့်ပါ။</p>'; return; }
+
+  var pick = null;
+  for (var i = 0; i < CABLE_SIZES.length; i++) {
+    var A = CABLE_SIZES[i];
+    var vd = (k * I * L * rho) / A;
+    if (vd <= limit) { pick = { a: A, vd: vd }; break; }
+  }
+  if (!pick) { $('cableOut').innerHTML = '<p class="warn">500 mm² အထိ မလုံလောက်ပါ။ Parallel cable သုံးပါ။</p>'; return; }
+
+  $('cableOut').innerHTML = rows([
+    ['အနည်းဆုံး Cable Size', pick.a + ' mm² (' + ($('cabMat').value === 'al' ? 'Aluminium' : 'Copper') + ')'],
+    ['Voltage Drop', fmt(pick.vd, 2) + ' V (' + fmt(pick.vd / V * 100, 2) + '%)'],
+    ['ခွင့်ပြု Limit', fmt(limit, 2) + ' V (' + fmt(maxDrop, 1) + '%)']
+  ]) + '<p class="note">Voltage drop အပိုင်းသာ — ampacity နှင့် short-circuit withstand ကို သီးခြား စစ်ပါ။</p>';
+});
+
+/* ---------- Power P • S • Q ---------- */
+$('pwBtn').addEventListener('click', function () {
+  var V = num('pwV') || 400;
+  var I = num('pwI');
+  var pf = Math.min(Math.max(num('pwPF'), 0.01), 1);
+  var k = $('pwPhase').value === '3' ? Math.sqrt(3) : 1;
+
+  if (I <= 0) { $('pwOut').innerHTML = '<p class="warn">Current ဖြည့်ပါ။</p>'; return; }
+
+  var sVA = k * V * I;
+  var pW = sVA * pf;
+  var qVar = Math.sqrt(Math.max(sVA * sVA - pW * pW, 0));
+
+  $('pwOut').innerHTML = rows([
+    ['Active Power P', fmt(pW / 1000, 2) + ' kW'],
+    ['Apparent Power S', fmt(sVA / 1000, 2) + ' kVA'],
+    ['Reactive Power Q', fmt(qVar / 1000, 2) + ' kVAr']
+  ]);
+});
+
+/* ---------- PF Correction ---------- */
+$('pfBtn').addEventListener('click', function () {
+  var P = num('pfP');
+  var pf1 = Math.min(Math.max(num('pfCur'), 0.01), 0.999);
+  var pf2 = Math.min(Math.max(num('pfTar'), 0.01), 1);
+
+  if (P <= 0 || pf2 <= pf1) { $('pfOut').innerHTML = '<p class="warn">P ဖြည့်ပါ သို့မဟုတ် ပန်းတိုင် PF ကို မြင့်အောင် ထည့်ပါ။</p>'; return; }
+
+  var kvar = P * (Math.tan(Math.acos(pf1)) - Math.tan(Math.acos(pf2)));
+
+  $('pfOut').innerHTML = rows([
+    ['Capacitor Bank', fmt(kvar, 1) + ' kVAr'],
+    ['PF တိုးတက်မှု', fmt(pf1, 2) + ' → ' + fmt(pf2, 2)],
+    ['Formula', 'Qc = P · (tan φ₁ − tan φ₂)']
+  ]);
+});
+
+/* ---------- Transformer ---------- */
+$('trBtn').addEventListener('click', function () {
+  var P = num('trP');
+  var pf = Math.min(Math.max(num('trPF'), 0.1), 1);
+  var g = num('trG') / 100;
+
+  if (P <= 0) { $('trOut').innerHTML = '<p class="warn">Load (kW) ဖြည့်ပါ။</p>'; return; }
+
+  var kva = (P / pf) * (1 + g);
+  var pick = nextStd(TR_SIZES, kva);
+
+  $('trOut').innerHTML = rows([
+    ['လိုအပ်သော Capacity', fmt(kva, 1) + ' kVA'],
+    ['Standard Size', pick ? pick + ' kVA' : 'ဇယားပြင်ပ'],
+    ['Formula', 'kVA = Load / PF × (1 + growth ' + fmt(g * 100, 0) + '%)']
+  ]);
+});
+
+/* ---------- Init ---------- */
+computeSizing();
+renderLoadTotals();
+
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  });
+}
+</script>
+</body>
+</html>
